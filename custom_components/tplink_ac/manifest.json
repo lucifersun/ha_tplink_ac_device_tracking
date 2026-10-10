@@ -1,0 +1,11 @@
+{
+  "domain": "tplink_ac",
+  "name": "TP-Link AC Controller",
+  "config_flow": true,
+  "documentation": "https://github.com/lucifersun/ha_tplink_ac_device_tracking",
+  "issue_tracker": "https://github.com/lucifersun/ha_tplink_ac_device_tracking/issues",
+  "codeowners": ["@lucifersun"],
+  "iot_class": "local_polling",
+  "version": "0.1.0",
+  "requirements": []
+}
