@@ -156,53 +156,6 @@ class TpLinkAcApClientCountSensor(TpLinkAcBaseSensor):
         return len(self._coordinator.clients_of_ap(self._ap_mac))
 
 
-class TpLinkAcApClientListSensor(TpLinkAcBaseSensor):
-    """某 AP 下的在线终端列表（state 直接显示终端名称）。"""
-
-    _attr_icon = "mdi:format-list-bulleted"
-
-    def __init__(self, coordinator: TpLinkAcCoordinator, ap_mac: str) -> None:
-        super().__init__(coordinator)
-        self._ap_mac = ap_mac
-        ap = coordinator.aps.get(ap_mac, {})
-        self._attr_unique_id = f"{DOMAIN}_ap_{ap_mac}_client_list"
-        self._attr_name = "终端列表"
-        self._attr_device_info = _ap_device_info(ap)
-
-    @property
-    def native_value(self) -> str:
-        try:
-            clients = self._coordinator.clients_of_ap(self._ap_mac)
-            names = [_client_display_name(c) for c in clients]
-            if not names:
-                return "无在线终端"
-            text = "、".join(names)
-            if len(text) > 200:
-                text = text[:200] + f"… 等 {len(names)} 台"
-            return text
-        except Exception as err:  # noqa: BLE001
-            LOGGER.exception("生成终端列表失败 (AP=%s): %s", self._ap_mac, err)
-            return "获取失败"
-
-    @property
-    def extra_state_attributes(self) -> dict:
-        clients = self._coordinator.clients_of_ap(self._ap_mac)
-        return {
-            "count": len(clients),
-            "clients": [
-                {
-                    "name": _client_display_name(c),
-                    "mac": c.get("mac"),
-                    "ip": c.get("ip"),
-                    "ssid": c.get("ssid"),
-                    "band": (c.get("rf_entry") or [{}])[0].get("freq_name"),
-                    "rssi": (c.get("rf_entry") or [{}])[0].get("rssi"),
-                }
-                for c in clients
-            ],
-        }
-
-
 class TpLinkAcClientApSensor(CoordinatorEntity, SensorEntity):
     """终端当前所在 AP（枚举传感器）。
 
@@ -285,7 +238,6 @@ async def async_setup_entry(
             if ap_mac not in added_aps:
                 added_aps.add(ap_mac)
                 new_entities.append(TpLinkAcApClientCountSensor(coordinator, ap_mac))
-                new_entities.append(TpLinkAcApClientListSensor(coordinator, ap_mac))
         if new_entities:
             async_add_entities(new_entities)
 
